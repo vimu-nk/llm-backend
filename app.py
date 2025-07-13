@@ -1,31 +1,24 @@
-import os
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from openai import OpenAI
+import os
 
-# Initialize Flask app
 app = Flask(__name__)
+CORS(app)  # Allow all origins by default
 
-# Load API key from environment variable only
 api_key = os.getenv("OPENAI_API_KEY")
 if not api_key:
-    raise EnvironmentError(
-        "OPENAI_API_KEY environment variable is not set. "
-        "In GCP, set this in your service's environment variables."
-    )
+    raise EnvironmentError("OPENAI_API_KEY environment variable not set.")
 
-# Initialize OpenAI client
 client = OpenAI(api_key=api_key)
 
 @app.route("/ask", methods=["POST"])
 def ask():
     data = request.get_json()
+    question = data.get("question")
+    if not question:
+        return jsonify({"error": "Missing 'question'"}), 400
 
-    if not data or "question" not in data:
-        return jsonify({"error": "Missing 'question' in request body"}), 400
-
-    question = data["question"]
-
-    # Single API call to OpenAI
     try:
         response = client.chat.completions.create(
             model="gpt-4o",
@@ -40,7 +33,6 @@ def ask():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# Optional health check
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({"status": "ok"})

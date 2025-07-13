@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<title>LLM Ask</title>
+	</head>
+	<body>
+		<h1>Ask the LLM</h1>
+		<input
+			type="text"
+			id="question"
+			placeholder="Type your question"
+			size="50"
+		/>
+		<button onclick="ask()">Ask</button>
+		<pre id="response"></pre>
+
+		<script>
+			async function ask() {
+				const question = document.getElementById("question").value;
+				const responseElem = document.getElementById("response");
+				responseElem.textContent = "Loading...";
+
+				const res = await fetch("http://35.232.9.183:8080/ask", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ question }),
+				});
+
+				const data = await res.json();
+				responseElem.textContent = data.answer || JSON.stringify(data);
+			}
+		</script>
+	</body>
+</html>
